@@ -11,6 +11,22 @@ AFPSCharacter::AFPSCharacter()
 
 	UE_LOG(LogTemp, Warning, TEXT("FPSCharacter Constructor Called"));
 
+	if (!FPSCameraComponent) {
+		FPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera")); // AddComponent in Unity
+		FPSCameraComponent->SetupAttachment(CastChecked<USceneComponent, UCapsuleComponent>(GetCapsuleComponent()));
+		FPSCameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f + BaseEyeHeight));
+		FPSCameraComponent->bUsePawnControlRotation = true;
+	}
+
+	if(!FPSMeshComponent) {
+		FPSMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
+		FPSMeshComponent->SetupAttachment(FPSCameraComponent);
+		FPSMeshComponent->bCastDynamicShadow = false;
+		FPSMeshComponent->CastShadow = false;
+	}
+
+	GetMesh()->SetOwnerNoSee(true);
+
 	// This is a crash test, feel free to uncomment and see the crash
 	// int* CrashInt = nullptr;
 	// UE_LOG(LogTemp, Warning, TEXT("%i"), *CrashInt);
@@ -76,7 +92,34 @@ void AFPSCharacter::EndJump()
 
 void AFPSCharacter::Fire()
 {
-	// Print a console message for fire
-	UE_LOG(LogTemp, Warning, TEXT("FIRE"));
+	if (!ProjectileClass) return;
+
+	// Init relevant infomration for where the projectile will be
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+	MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+
+	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
+	FRotator MuzzleRotation = CameraRotation;
+	MuzzleRotation.Pitch += 10.0f;
+
+	// Start of spawning the projectile
+	UWorld* World = GetWorld();
+	if (!World)  return;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	// Unity Instantiate
+	AFPSProjectile* Projectile = World->SpawnActor<AFPSProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+	if (!Projectile) return;
+
+	// Launch spawned projectile in the camera rotation
+	FVector LaunchDirection = MuzzleRotation.Vector();
+	Projectile->FireInDirection(LaunchDirection);
 }
 
