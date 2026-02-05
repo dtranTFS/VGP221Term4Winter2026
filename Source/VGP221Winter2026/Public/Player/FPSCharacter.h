@@ -6,8 +6,12 @@
 #include "Components/CapsuleComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "HUD/GameHUD.h"
+#include "Kismet/GameplayStatics.h"
 #include "Projectile/FPSProjectile.h"
 #include "FPSCharacter.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDied);
 
 UCLASS()
 class VGP221WINTER2026_API AFPSCharacter : public ACharacter
@@ -40,6 +44,10 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AFPSProjectile> ProjectileClass;
+	
+	UPROPERTY(EditAnywhere)
+	FOnPlayerDied OnPlayerDied;
+
 
 	UFUNCTION()
 	void OnMoveForward(float Value);
@@ -55,4 +63,11 @@ public:
 
 	UFUNCTION()
 	void Fire();
+
+	UFUNCTION()
+	void OnHurtPlayer(float DamageAmount);
+
+private:
+	float Health = 100.0f;
+	float MaxHealth = 100.0f;
 };

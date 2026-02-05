@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/Canvas.h"
 #include "GameFramework/HUD.h"
+#include "GUI/GameMenuWidget.h"
 #include "GUI/SlateExample/SSettingsWidget.h"
 #include "GameHUD.generated.h"
 
@@ -29,6 +30,13 @@ public:
 
 	void ShowSettingsMenu();
 	void HideSettingsMenu();
+
+	// 3. UMG Method of making UI (See GameMenuWidget)
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UGameMenuWidget> StartingGameWidget;
+	UGameMenuWidget* GameMenuWidgetContainer;
+
+	void SpawnGameMenu(TSubclassOf<UGameMenuWidget> NewGameMenuWidget);
 
 	UPROPERTY(EditDefaultsOnly)
 	UTexture2D* CrosshairTexture;

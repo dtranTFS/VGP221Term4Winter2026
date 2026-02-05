@@ -33,4 +33,26 @@ void AFPSProjectGameMode::StartPlay()
 
 	// 4. Modern way of debugging values
 	UE_LOGFMT(LogTemp, Warning, "TestNumber: {0}, TestBool: {1}, TestString: {2}", TestNumber, TestBool, "TestString");
+
+	AGameHUD* HUD = UGameplayStatics::GetPlayerController(this, 0)->GetHUD<AGameHUD>();
+	HUD->GameMenuWidgetContainer->SetScoreText(0);
+	HUD->GameMenuWidgetContainer->SetTimerText(0);
+
+	// Get Player and bind on died
+	AFPSCharacter* Player = Cast<AFPSCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	if (Player) {
+		Player->OnPlayerDied.AddDynamic(this, &AFPSProjectGameMode::HandlePlayerDied);
+	}
+}
+
+void AFPSProjectGameMode::HandlePlayerDied()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player Died!"));
+	GoToGameOver();
+}
+
+void AFPSProjectGameMode::GoToGameOver()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Gonig to Game over"));
+	UGameplayStatics::OpenLevel(this, FName("GameOverMap"));
 }
